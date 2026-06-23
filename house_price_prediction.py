@@ -1,33 +1,45 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.metrics import mean_absolute_error, r2_score
 
-# Load dataset (download from Kaggle, e.g., "House Prices: Advanced Regression Techniques")
-data = pd.read_csv("house_prices.csv")
+# Load Dataset
+data = pd.read_csv("Housing.csv")
 
-# Select relevant features
-features = ['OverallQual', 'GrLivArea', 'GarageCars', 'TotalBsmtSF']
-X = data[features]
-y = data['SalePrice']
+print(data.head())
 
-# Split data
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# Convert categorical columns
+data = pd.get_dummies(data, drop_first=True)
 
-# Train model
+# Features
+X = data.drop("price", axis=1)
+
+# Target
+y = data["price"]
+
+# Split Data
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y,
+    test_size=0.2,
+    random_state=42
+)
+
+# Train Model
 model = LinearRegression()
 model.fit(X_train, y_train)
 
 # Predictions
-y_pred = model.predict(X_test)
+predictions = model.predict(X_test)
 
 # Evaluation
-print("Model Coefficients:", model.coef_)
-print("Intercept:", model.intercept_)
-print("Mean Squared Error:", mean_squared_error(y_test, y_pred))
-print("R² Score:", r2_score(y_test, y_pred))
+mae = mean_absolute_error(y_test, predictions)
+r2 = r2_score(y_test, predictions)
 
-# Example prediction
-sample_house = [[7, 2000, 2, 800]]  # Quality=7, Size=2000 sqft, Garage=2, Basement=800 sqft
+print("\nMean Absolute Error:", mae)
+print("R2 Score:", r2)
+
+# Test Prediction
+sample_house = X_test.iloc[0:1]
 predicted_price = model.predict(sample_house)
-print(f"Predicted House Price: ${predicted_price[0]:,.2f}")
+
+print("\nPredicted House Price:", predicted_price[0])
